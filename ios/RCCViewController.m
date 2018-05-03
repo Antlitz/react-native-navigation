@@ -38,6 +38,18 @@ const NSInteger TRANSPARENT_NAVBAR_TAG = 78264803;
     return _navBarHairlineImageView;
 }
 
+- (UIImage *)imageFromLayer:(CALayer *)layer
+{
+    UIGraphicsBeginImageContextWithOptions(layer.frame.size, NO, 0);
+    
+    [layer renderInContext:UIGraphicsGetCurrentContext()];
+    UIImage *outputImage = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    return outputImage;
+}
+
 + (UIViewController*)controllerWithLayout:(NSDictionary *)layout globalProps:(NSDictionary *)globalProps bridge:(RCTBridge *)bridge {
     UIViewController* controller = nil;
     if (!layout) return nil;
@@ -329,8 +341,22 @@ const NSInteger TRANSPARENT_NAVBAR_TAG = 78264803;
     NSString *navBarBackgroundColor = self.navigatorStyle[@"navBarBackgroundColor"];
     if (navBarBackgroundColor) {
         
-        UIColor *color = navBarBackgroundColor != (id)[NSNull null] ? [RCTConvert UIColor:navBarBackgroundColor] : nil;
-        viewController.navigationController.navigationBar.barTintColor = color;
+//        UIColor *color = navBarBackgroundColor != (id)[NSNull null] ? [RCTConvert UIColor:navBarBackgroundColor] : nil;
+//        viewController.navigationController.navigationBar.barTintColor = color;
+        
+        // MARK: - Custom hard code
+        CAGradientLayer *gradient = [CAGradientLayer layer];
+        gradient.frame = viewController.navigationController.navigationBar.bounds;
+        gradient.colors = [NSArray arrayWithObjects:
+                           (id)([UIColor colorWithRed:0.58984375 green:0.078125 blue:0.58984375 alpha:1.000].CGColor),
+                           (id)([UIColor colorWithRed:0.89 green:0.1171875 blue:0.34375 alpha:1.000].CGColor),
+                           nil];
+        gradient.startPoint = CGPointMake(0.0, 0.5);
+        gradient.endPoint = CGPointMake(1.0, 0.5);
+        
+        UIImage *bgImage = [self imageFromLayer:gradient];
+        [viewController.navigationController.navigationBar setBackgroundImage:bgImage forBarMetrics:UIBarMetricsDefault];
+        viewController.navigationController.navigationBar.barTintColor = nil;
         
     } else {
         viewController.navigationController.navigationBar.barTintColor = nil;
