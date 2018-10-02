@@ -218,7 +218,6 @@ const NSInteger TRANSPARENT_NAVBAR_TAG = 78264803;
 
 - (void)sendScreenChangedEvent:(NSString *)eventName {
     if ([self.view isKindOfClass:[RCTRootView class]]) {
-        
         RCTRootView *rootView = (RCTRootView *)self.view;
         
         if (rootView.appProperties && rootView.appProperties[@"navigatorEventID"]) {
@@ -234,8 +233,8 @@ const NSInteger TRANSPARENT_NAVBAR_TAG = 78264803;
 
 - (void)sendGlobalScreenEvent:(NSString *)eventName endTimestampString:(NSString *)endTimestampStr shouldReset:(BOOL)shouldReset {
     if ([self.view isKindOfClass:[RCTRootView class]]){
-        NSString *screenName = [((RCTRootView*)self.view) moduleName];
-        
+        NSString *screenName = [((RCTRootView *)self.view) moduleName];
+
         [[[RCCManager sharedInstance] getBridge].eventDispatcher sendAppEventWithName:eventName body:@
          {
              @"commandType": self.commandType ? self.commandType : @"",
@@ -561,7 +560,7 @@ const NSInteger TRANSPARENT_NAVBAR_TAG = 78264803;
         }
     };
     
-    if (!self.transitionCoordinator || self.transitionCoordinator.initiallyInteractive || !navBarTransparentBool || appeared) {
+    if (!self.transitionCoordinator || self.transitionCoordinator.initiallyInteractive || !navBarTransparentBool || appeared || [self isModal]) {
         action();
     } else {
         UIView* backgroundView = [self.navigationController.navigationBar valueForKey:@"backgroundView"];
@@ -665,6 +664,17 @@ const NSInteger TRANSPARENT_NAVBAR_TAG = 78264803;
         }
     }
 #endif
+}
+
+- (BOOL)isModal {
+    if([self presentingViewController])
+        return YES;
+    if([[[self navigationController] presentingViewController] presentedViewController] == [self navigationController])
+        return YES;
+    if([[[self tabBarController] presentingViewController] isKindOfClass:[UITabBarController class]])
+        return YES;
+    
+    return NO;
 }
 
 -(void)processTitleView:(UIViewController*)viewController
